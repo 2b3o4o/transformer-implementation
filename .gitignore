@@ -1,0 +1,4 @@
+data/
+notebooks/.vector_cache/
+notebooks/vscode-workspace.code-workspace
+venv/
