@@ -60,9 +60,9 @@ class TrainWrapper:
     def setup(self, model: TransformerNetwork):
         self.trainer = Trainer(model, self.train_dataset, self.test_dataset, self.device)
 
-    def train(self, epochs, do_val=True, print_loss: bool=True):
+    def train(self, epochs, do_val=True):
         assert self.trainer
-        self.trainer.train(epochs, do_val, print_loss)
+        self.trainer.train(epochs, do_val)
 
     @property
     def test_loader(self):

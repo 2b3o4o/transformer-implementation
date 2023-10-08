@@ -1,3 +1,4 @@
+import logging
 import torch
 from torch.utils.data import DataLoader
 from model import TransformerNetwork
@@ -28,7 +29,7 @@ class Trainer:
         self.train_loader = DataLoader(dataset=train_dataset, batch_size=32, shuffle=True)
         self.test_loader = DataLoader(dataset=test_dataset, batch_size=32, shuffle=False)
 
-    def train_one_epoch(self, do_validation: bool=True, print_loss: bool=True):
+    def train_one_epoch(self, do_validation: bool=True):
         self.model.train(True)
         torch.set_printoptions(profile="short")
         batches = 0
@@ -45,8 +46,7 @@ class Trainer:
             batches = step + 1
 
         avg_loss = avg_loss / batches
-        if print_loss:
-            print(f"Average loss for training batches in this epoch: {avg_loss}")
+        logging.info(f"Average loss for training batches in this epoch: {avg_loss}")
 
         if do_validation:
             self.model.train(False)
@@ -61,11 +61,9 @@ class Trainer:
                 batches = step + 1
 
             avg_loss = avg_loss / batches
-            if print_loss:
-                print(f"Average loss for validation batches in this epoch: {avg_loss}")
+            logging.info(f"Average loss for validation batches in this epoch: {avg_loss}")
 
-    def train(self, epochs, do_val=True, print_loss: bool=True):
+    def train(self, epochs, do_val=True):
         for i in range(epochs):
-            if print_loss:
-                print(f"Epoch {i}:")
-            self.train_one_epoch(do_val, print_loss)
+            logging.info(f"Epoch {i}:")
+            self.train_one_epoch(do_val)

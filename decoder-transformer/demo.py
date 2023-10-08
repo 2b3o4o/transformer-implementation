@@ -1,3 +1,4 @@
+import logging
 from train_wrapper import TrainWrapper
 from model import TransformerNetwork
 from utils import infer_completion, check_test_accuracy
@@ -37,6 +38,8 @@ def small_model() -> (TrainWrapper, TransformerNetwork, int):
     return (trainer, model, context_len)
 
 def main():
+    logging.basicConfig(level=logging.DEBUG)
+
     trainer, model, context_len = micro_model() # Try uncommenting larger presets
     # trainer, model, context_len = tiny_model()
     # trainer, model, context_len = small_model()

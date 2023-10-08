@@ -2,3 +2,4 @@ data/
 notebooks/.vector_cache/
 notebooks/vscode-workspace.code-workspace
 venv/
+__pycache__/
