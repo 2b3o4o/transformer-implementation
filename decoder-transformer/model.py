@@ -10,11 +10,9 @@ def par_attention(queries: tensor, keys: tensor, values: tensor, dim: int) -> te
 
     mask = torch.tril(torch.ones_like(raw_weights), diagonal=0)
     raw_weights = raw_weights.masked_fill(mask == 0, float('-inf'))
-    # print(f"raw_weights.shape:{raw_weights.shape}\nraw_weights: {raw_weights}")
 
     scale_factor = sqrt(dim)
     scaled_weights = softmax(raw_weights / scale_factor, dim=2)
-    # print(f"scaled_weights.shape:{scaled_weights.shape}\nscaled_weights: {scaled_weights}")
 
     # now scaled weights is a matrix where each row represents the scaled weights produced based on a given query.
     # meanwhile values just has a value vector on each row.
@@ -51,11 +49,6 @@ class PositionalEncoding(nn.Module):
         for batch in range(0, x.shape[0]):
             output[batch] = self.proj(x[batch].view(x.shape[1], -1))
             output[batch] += self.positional_matrix
-        # print(f"self.context_len={self.context_len}")
-        # print(f"Shape of x before assert: {x.shape}")
-        # assert x.shape[1] == self.context_len
-        # output = self.proj(x)
-        # output += self.positional_matrix
         return output
     
 class AttentionHead(nn.Module):

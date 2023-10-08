@@ -1,5 +1,6 @@
 import torch
 from torch import tensor
+from torch.nn.functional import softmax
 from .train import CompletionDataset
 
 def prep_input_string(string, context_len, vocab, tokenizer) -> tensor:
@@ -54,7 +55,7 @@ def build_dataset(slices: tensor) -> CompletionDataset:
     dataset = CompletionDataset(features, labels)
     return dataset
 
-def check_input_data(input):
+def check_input_data(input, reverse_vocab):
     """
     Sanity check helper for CompletionDataset objects.
     Usage:
@@ -71,3 +72,25 @@ def check_input_data(input):
     label_str = reverse_vocab[label]
     print(f"Features:\n{features_str}")
     print(f"Label:\n{label_str}")
+
+def infer_completion(model, device, reverse_vocab, input_text: str, context_len):
+    encoded_input = prep_input_string(input_text, context_len).unsqueeze(0).float().to(device)
+    
+    model.train(False)
+    pred = model(encoded_input)
+    return reverse_vocab[torch.argmax(softmax(pred, dim=1), dim=1).item()]
+
+def check_test_accuracy(model, test_loader):
+        model.eval()  # Set the model to evaluation mode
+        correct = 0
+        total = 0
+
+        with torch.no_grad():  # Deactivates autograd, reduces memory usage and speeds up computations
+            for features, labels in test_loader:
+                outputs = model(features)
+                _, predicted = torch.max(outputs.data, 1)  # Get the index of the max log-probability
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+
+        accuracy = 100 * correct / total
+        print(f"Accuracy on test set: {accuracy}%")

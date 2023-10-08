@@ -5,11 +5,10 @@ from .train import Trainer
 from .model import TransformerNetwork
 
 class TrainWrapper:
-    def __init__(self, model: TransformerNetwork, train_files: [str]=None, test_files: [str]=None, tokenizer=None, device=None):
-        context_len = model.context_len
-
+    def __init__(self, context_len: int=16, train_files: [str]=None, test_files: [str]=None, tokenizer=None, device=None):
         self.device = device if device else torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = tokenizer if tokenizer else spacy.load("en_core_web_sm")
+        self.trainer: Trainer = None
         if not train_files:
             train_files = [
             "../data/_part1.txt",
@@ -49,18 +48,22 @@ class TrainWrapper:
         # note: slice_text returns an n by slice_length tensor of ints. (from vocab)
         train_slices = [] # list of tensors
         for text in self.train_texts:
-            # train_slices.append(slice_by_line(text, context_len))
             train_slices.append(slice_text(text, slice_length, slice_offset, context_len))
             train_slices.append(slice_text(text, slice_length - 2, 1, context_len))
             train_slices.append(slice_text(text, 5, 1, context_len))
         self.train_dataset = build_dataset(torch.cat(train_slices, dim=0))
         test_slices = [] # list of tensors
         for text in self.test_texts:
-            # test_slices.append(slice_by_line(text, context_len))
             test_slices.append(slice_text(text, slice_length - 3, 1, context_len))
-        self.test_dataset = build_dataset(torch.cat(test_slices, dim=0))
-
-        self.trainer = Trainer
+        self.test_dataset = build_dataset(torch.cat(test_slices, dim=0))   
     
-    def train(self):
-        train
+    def setup(self, model: TransformerNetwork):
+        self.trainer = Trainer(model, self.train_dataset, self.test_dataset, self.device)
+
+    def train(self, epochs, do_val=True, print_loss: bool=True):
+        assert self.trainer
+        self.trainer.train(epochs, do_val, print_loss)
+
+    @property
+    def test_loader(self):
+        return self.trainer.test_loader
