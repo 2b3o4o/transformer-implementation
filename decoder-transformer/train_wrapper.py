@@ -1,8 +1,8 @@
 import torch
 import spacy
-from .utils import slice_text, build_dataset
-from .train import Trainer
-from .model import TransformerNetwork
+from utils import slice_text, build_dataset
+from train import Trainer
+from model import TransformerNetwork
 
 class TrainWrapper:
     def __init__(self, context_len: int=16, train_files: [str]=None, test_files: [str]=None, tokenizer=None, device=None):
@@ -35,7 +35,7 @@ class TrainWrapper:
         all_tokens.extend(['<PAD>', '<UNK>']) # special tokens
 
         for text in self.train_texts + self.test_texts:
-            doc = tokenizer(text)
+            doc = self.tokenizer(text)
             tokens = [token.text for token in doc]
             all_tokens.extend(tokens)
 
@@ -48,13 +48,13 @@ class TrainWrapper:
         # note: slice_text returns an n by slice_length tensor of ints. (from vocab)
         train_slices = [] # list of tensors
         for text in self.train_texts:
-            train_slices.append(slice_text(text, slice_length, slice_offset, context_len))
-            train_slices.append(slice_text(text, slice_length - 2, 1, context_len))
-            train_slices.append(slice_text(text, 5, 1, context_len))
+            train_slices.append(slice_text(text, slice_length, slice_offset, context_len, self.tokenizer, self.device, self.vocab))
+            train_slices.append(slice_text(text, slice_length - 2, 1, context_len, self.tokenizer, self.device, self.vocab))
+            train_slices.append(slice_text(text, 5, 1, context_len, self.tokenizer, self.device, self.vocab))
         self.train_dataset = build_dataset(torch.cat(train_slices, dim=0))
         test_slices = [] # list of tensors
         for text in self.test_texts:
-            test_slices.append(slice_text(text, slice_length - 3, 1, context_len))
+            test_slices.append(slice_text(text, slice_length - 3, 1, context_len, self.tokenizer, self.device, self.vocab))
         self.test_dataset = build_dataset(torch.cat(test_slices, dim=0))   
     
     def setup(self, model: TransformerNetwork):

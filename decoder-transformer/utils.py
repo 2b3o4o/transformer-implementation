@@ -1,7 +1,7 @@
 import torch
 from torch import tensor
 from torch.nn.functional import softmax
-from .train import CompletionDataset
+from train import CompletionDataset
 
 def prep_input_string(string, context_len, vocab, tokenizer) -> tensor:
     """Takes an input string with up to context_len tokens and returns a tensor full of integers, which can be passed into the model"""
@@ -24,7 +24,7 @@ def prep_tokens(tokens, length, vocab) -> tensor:
 
 # slice_offset is the number of tokens separating the start of one slice from the start of the previous.
 # slice_offset == slice_length means no overlap, slice_offset == 1 means maximum overlap.
-def slice_text(text: str, slice_length, slice_offset, context_len, tokenizer, output_device) -> tensor:
+def slice_text(text: str, slice_length, slice_offset, context_len, tokenizer, output_device, vocab) -> tensor:
     slices = []
     tokens = tokenizer(text)
 
@@ -33,7 +33,7 @@ def slice_text(text: str, slice_length, slice_offset, context_len, tokenizer, ou
 
     output = torch.zeros([len(slices), context_len + 1]) # use context_len + 1 because we need to include the label
     for i, slice in enumerate(slices):
-        output[i] = prep_tokens(slice, context_len + 1)
+        output[i] = prep_tokens(slice, context_len + 1, vocab)
 
     assert output.shape[1] == context_len + 1
     return output.to(output_device)
@@ -73,8 +73,8 @@ def check_input_data(input, reverse_vocab):
     print(f"Features:\n{features_str}")
     print(f"Label:\n{label_str}")
 
-def infer_completion(model, device, reverse_vocab, input_text: str, context_len):
-    encoded_input = prep_input_string(input_text, context_len).unsqueeze(0).float().to(device)
+def infer_completion(model, device, vocab, reverse_vocab, input_text: str, context_len, tokenizer):
+    encoded_input = prep_input_string(input_text, context_len, vocab, tokenizer).unsqueeze(0).float().to(device)
     
     model.train(False)
     pred = model(encoded_input)

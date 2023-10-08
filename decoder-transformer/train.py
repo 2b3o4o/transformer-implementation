@@ -1,6 +1,6 @@
 import torch
 from torch.utils.data import DataLoader
-from .model import TransformerNetwork
+from model import TransformerNetwork
 
 class CompletionDataset(torch.utils.data.Dataset):
     def __init__(self, features, labels):
