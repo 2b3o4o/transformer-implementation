@@ -1,9 +1,12 @@
-import logging
+from relative_logger import get_logger
 from train_wrapper import TrainWrapper
 from model import TransformerNetwork
 from utils import infer_completion, check_test_accuracy
 
+logger = get_logger(__name__)
+
 def micro_model() -> (TrainWrapper, TransformerNetwork, int):
+    logger.info("Creating model from micro preset...")
     train_files = ["../data/_part1.txt"]
     test_files = ["../data/much_ado_about_nothing_gut.txt"]
     context_len = 8
@@ -13,6 +16,7 @@ def micro_model() -> (TrainWrapper, TransformerNetwork, int):
     return (trainer, model, context_len)
 
 def tiny_model() -> (TrainWrapper, TransformerNetwork, int):
+    logger.info("Creating model from tiny preset...")
     train_files = ["../data/_part1.txt"]
     test_files = ["../data/much_ado_about_nothing_gut.txt"]
     context_len = 16
@@ -22,6 +26,7 @@ def tiny_model() -> (TrainWrapper, TransformerNetwork, int):
     return (trainer, model, context_len)
 
 def small_model() -> (TrainWrapper, TransformerNetwork, int):
+    logger.info("Creating model from small preset...")
     train_files = [
         "../data/_part1.txt",
         "../data/_part2.txt",
@@ -38,8 +43,6 @@ def small_model() -> (TrainWrapper, TransformerNetwork, int):
     return (trainer, model, context_len)
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
-
     trainer, model, context_len = micro_model() # Try uncommenting larger presets
     # trainer, model, context_len = tiny_model()
     # trainer, model, context_len = small_model()
@@ -47,7 +50,7 @@ def main():
     
     check_test_accuracy(model, trainer.test_loader)
     string = "From fairest creatures we desire"
-    print(f"Completion test: {string}{infer_completion(model, model.device, trainer.vocab, trainer.reverse_vocab, string, context_len, trainer.tokenizer)}")
+    logger.info(f"Completion test: {string}{infer_completion(model, model.device, trainer.vocab, trainer.reverse_vocab, string, context_len, trainer.tokenizer)}")
 
 if __name__ == "__main__":
     main()

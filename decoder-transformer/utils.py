@@ -2,6 +2,9 @@ import torch
 from torch import tensor
 from torch.nn.functional import softmax
 from train import CompletionDataset
+from relative_logger import get_logger
+
+logger = get_logger(__name__)
 
 def prep_input_string(string, context_len, vocab, tokenizer) -> tensor:
     """Takes an input string with up to context_len tokens and returns a tensor full of integers, which can be passed into the model"""
@@ -70,8 +73,8 @@ def check_input_data(input, reverse_vocab):
     label = input[1].int().item()
     features_str = [reverse_vocab[f] for f in features]
     label_str = reverse_vocab[label]
-    print(f"Features:\n{features_str}")
-    print(f"Label:\n{label_str}")
+    logger.debug(f"Features:\n{features_str}")
+    logger.debug(f"Label:\n{label_str}")
 
 def infer_completion(model, device, vocab, reverse_vocab, input_text: str, context_len, tokenizer):
     encoded_input = prep_input_string(input_text, context_len, vocab, tokenizer).unsqueeze(0).float().to(device)
@@ -93,4 +96,4 @@ def check_test_accuracy(model, test_loader):
                 correct += (predicted == labels).sum().item()
 
         accuracy = 100 * correct / total
-        print(f"Accuracy on test set: {accuracy}%")
+        logger.info(f"Accuracy on test set: {accuracy}%")

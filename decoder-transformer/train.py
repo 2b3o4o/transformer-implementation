@@ -1,7 +1,9 @@
-import logging
+from relative_logger import get_logger
 import torch
 from torch.utils.data import DataLoader
 from model import TransformerNetwork
+
+logger = get_logger(__name__)
 
 class CompletionDataset(torch.utils.data.Dataset):
     def __init__(self, features, labels):
@@ -46,7 +48,7 @@ class Trainer:
             batches = step + 1
 
         avg_loss = avg_loss / batches
-        logging.info(f"Average loss for training batches in this epoch: {avg_loss}")
+        logger.info(f"Average loss for training batches in this epoch: {avg_loss}")
 
         if do_validation:
             self.model.train(False)
@@ -61,9 +63,9 @@ class Trainer:
                 batches = step + 1
 
             avg_loss = avg_loss / batches
-            logging.info(f"Average loss for validation batches in this epoch: {avg_loss}")
+            logger.info(f"Average loss for validation batches in this epoch: {avg_loss}")
 
     def train(self, epochs, do_val=True):
         for i in range(epochs):
-            logging.info(f"Epoch {i}:")
+            logger.info(f"Epoch {i}:")
             self.train_one_epoch(do_val)

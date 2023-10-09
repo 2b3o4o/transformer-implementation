@@ -1,3 +1,4 @@
+import logging
 import torch
 from torch import tensor, sin, cos
 from math import sqrt
@@ -108,6 +109,7 @@ class TransformerLayer(nn.Module):
 
 class TransformerNetwork(nn.Module):
     def __init__(self, output_dict_size: int, device: torch.device=None, context_len: int=16, num_layers=3, model_dim=256, att_heads=4, ff_hidden_dim=1024):
+        logging.debug("Initializing model...")
         super().__init__()
         self.device = device if device else torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

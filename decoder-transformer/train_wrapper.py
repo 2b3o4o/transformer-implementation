@@ -1,3 +1,4 @@
+from relative_logger import get_logger
 import torch
 import spacy
 from utils import slice_text, build_dataset
@@ -6,6 +7,7 @@ from model import TransformerNetwork
 
 class TrainWrapper:
     def __init__(self, context_len: int=16, train_files: [str]=None, test_files: [str]=None, tokenizer=None, device=None):
+        get_logger(__name__).debug("Initializing TrainWrapper object")
         self.device = device if device else torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = tokenizer if tokenizer else spacy.load("en_core_web_sm")
         self.trainer: Trainer = None
