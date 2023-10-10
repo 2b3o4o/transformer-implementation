@@ -32,7 +32,7 @@ class TrainWrapper:
             all_tokens.extend(tokens)
 
         unique_tokens = set(all_tokens)
-        logger.info(f"Finished processing pre-training data. Creating dictionary of size {len(unique_tokens)}...")
+        logger.info(f"Finished tokenizing pre-training data. Will create dictionary of size {len(unique_tokens)}.")
         self.vocab = {token: i for i, token in enumerate(unique_tokens)}
         self.reverse_vocab = {i: token for i, token in enumerate(unique_tokens)}
 

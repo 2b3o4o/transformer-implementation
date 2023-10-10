@@ -1,5 +1,6 @@
-from relative_logger import get_logger
+import os
 import torch
+from relative_logger import get_logger
 from torch.utils.data import DataLoader
 from model import TransformerNetwork
 
@@ -54,22 +55,23 @@ class Trainer:
         logger.info(f"Average loss for training batches in this epoch: {avg_loss}")
 
         if do_validation:
-            self.model.train(False)
-            batches = 0
-            avg_loss = 0
-            for step, (features, labels) in enumerate(self.test_loader):
-                features, labels = features.to(self.device), labels.to(self.device)
-                preds = self.model(features)
-                loss = self.loss_func(preds, labels)
-
-                avg_loss += loss
-                batches = step + 1
-
-                del features
-                del labels
-
-            avg_loss = avg_loss / batches
-            logger.info(f"Average loss for validation batches in this epoch: {avg_loss}")
+            with torch.no_grad():
+                self.model.train(False)
+                batches = 0
+                avg_loss = 0
+                for step, (features, labels) in enumerate(self.test_loader):
+                    features, labels = features.to(self.device), labels.to(self.device)
+                    preds = self.model(features)
+                    loss = self.loss_func(preds, labels)
+    
+                    avg_loss += loss
+                    batches = step + 1
+    
+                    del features
+                    del labels
+    
+                avg_loss = avg_loss / batches
+                logger.info(f"Average loss for validation batches in this epoch: {avg_loss}")
 
     def train(self, epochs, do_val=True):
         for i in range(epochs):
@@ -84,4 +86,7 @@ class Trainer:
             "model_state_dict": self.model.state_dict(),
             "optimizer_state_dict": self.optimizer.state_dict(),
         }
-        torch.save(checkpoint, f"saved_models/{self.model.name}/checkpoint-epoch{epoch}.pth")
+        dir_path = f"saved-models/{self.model.name}"
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+        torch.save(checkpoint, f"{dir_path}/checkpoint-epoch{epoch}.pth")

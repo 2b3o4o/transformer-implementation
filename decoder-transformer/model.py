@@ -1,10 +1,11 @@
-import logging
+from relative_logger import get_logger
 import torch
 from torch import tensor, sin, cos
 from math import sqrt
 from torch.nn.functional import softmax
 import torch.nn as nn
 
+logger = get_logger(__name__)
 
 def par_attention(queries: tensor, keys: tensor, values: tensor, dim: int) -> tensor:
     raw_weights = torch.bmm(queries, keys.transpose(1, 2))
@@ -70,10 +71,11 @@ class AttentionHead(nn.Module):
         return output
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self, model_dim, num_heads):
+    def __init__(self, model_dim, num_heads, device):
         super().__init__()
         self.att_heads = nn.ModuleList([AttentionHead(model_dim, model_dim // num_heads) for _ in range(num_heads)])
         self.proj = nn.Linear(model_dim, model_dim, bias=False)
+        self.device = device
 
     def forward(self, x):
         head_outputs = [head(x) for head in self.att_heads]
@@ -82,9 +84,9 @@ class MultiHeadAttention(nn.Module):
         return x
         
 class TransformerLayer(nn.Module):
-    def __init__(self, model_dim, num_heads, ff_hidden_dim, context_len):
+    def __init__(self, model_dim, num_heads, ff_hidden_dim, context_len, device):
         super().__init__()
-        self.attention_block = MultiHeadAttention(model_dim, num_heads)
+        self.attention_block = MultiHeadAttention(model_dim, num_heads, device)
         self.norm1 = nn.LayerNorm(normalized_shape=[context_len, model_dim])
         self.ff1 = nn.Linear(model_dim, ff_hidden_dim)
         self.ff_relu = nn.ReLU()
@@ -108,13 +110,13 @@ class TransformerLayer(nn.Module):
 
 class TransformerNetwork(nn.Module):
     def __init__(self, output_dict_size: int, device: torch.device=None, context_len: int=16, num_layers=3, model_dim=256, att_heads=4, ff_hidden_dim=1024, name="model"):
-        logging.debug("Initializing model...")
+        logger.debug("Initializing model...")
         super().__init__()
         self.name = name
         self.device = device if device else torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         self.encode_embed = PositionalEncoding(model_dim, context_len, self.device)
-        self.trans_layers = nn.ModuleList([TransformerLayer(model_dim, att_heads, ff_hidden_dim, context_len) for _ in range(num_layers)])
+        self.trans_layers = nn.ModuleList([TransformerLayer(model_dim, att_heads, ff_hidden_dim, context_len, device) for _ in range(num_layers)])
         self.word_predictor = nn.Linear(model_dim * context_len, output_dict_size)
 
         self.context_len = context_len
