@@ -76,3 +76,12 @@ class Trainer:
             logger.info(f"Epoch {i}:")
             self.train_one_epoch(do_val)
             torch.cuda.empty_cache()
+        self.save_checkpoint(epochs)
+        
+    def save_checkpoint(self, epoch):
+        checkpoint = {
+            'epoch': epoch,
+            'model_state_dict': self.model.state_dict(),
+            'optimizer_state_dict': self.optimizer.state_dict(),
+        }
+        torch.save(checkpoint, 'saved_models/checkpoint.pth')
