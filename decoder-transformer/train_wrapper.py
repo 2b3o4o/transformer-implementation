@@ -5,24 +5,14 @@ from utils import slice_text, build_dataset
 from train import Trainer
 from model import TransformerNetwork
 
+logger = get_logger(__name__)
+
 class TrainWrapper:
-    def __init__(self, context_len: int=16, train_files: [str]=None, test_files: [str]=None, tokenizer=None, device=None):
-        get_logger(__name__).debug("Initializing TrainWrapper object")
+    def __init__(self, train_files, test_files, context_len: int=16, tokenizer=None, device=None):
+        logger.debug("Initializing TrainWrapper object...")
         self.device = device if device else torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = tokenizer if tokenizer else spacy.load("en_core_web_sm")
         self.trainer: Trainer = None
-        if not train_files:
-            train_files = [
-            "../data/_part1.txt",
-            # "../data/_part2.txt",
-            # "../data/_part3.txt",
-            # "../data/_part4.txt",
-            # "../data/_part5.txt",
-            # "../data/_part6.txt",
-            # "../data/_part7.txt"
-        ]
-        if not test_files:
-            test_files = ["../data/much_ado_about_nothing_gut.txt"]
 
         self.train_texts = []
         self.test_texts = []
@@ -42,6 +32,7 @@ class TrainWrapper:
             all_tokens.extend(tokens)
 
         unique_tokens = set(all_tokens)
+        logger.info(f"Finished processing pre-training data. Creating dictionary of size {len(unique_tokens)}...")
         self.vocab = {token: i for i, token in enumerate(unique_tokens)}
         self.reverse_vocab = {i: token for i, token in enumerate(unique_tokens)}
 

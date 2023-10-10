@@ -11,7 +11,7 @@ def micro_model() -> (TrainWrapper, TransformerNetwork, int):
     test_files = ["../data/much_ado_about_nothing_gut.txt"]
     context_len = 8
     trainer = TrainWrapper(context_len=context_len, train_files=train_files, test_files=test_files)
-    model = TransformerNetwork(output_dict_size=len(trainer.vocab), context_len=context_len, num_layers=1, model_dim=32, att_heads=4, ff_hidden_dim=64)
+    model = TransformerNetwork(output_dict_size=len(trainer.vocab), context_len=context_len, num_layers=1, model_dim=32, att_heads=4, ff_hidden_dim=64, name="micro")
     trainer.setup(model)
     return (trainer, model, context_len)
 
@@ -21,7 +21,7 @@ def tiny_model() -> (TrainWrapper, TransformerNetwork, int):
     test_files = ["../data/much_ado_about_nothing_gut.txt"]
     context_len = 16
     trainer = TrainWrapper(context_len=context_len, train_files=train_files, test_files=test_files)
-    model = TransformerNetwork(output_dict_size=len(trainer.vocab), context_len=context_len, num_layers=2, model_dim=128, att_heads=4, ff_hidden_dim=256)
+    model = TransformerNetwork(output_dict_size=len(trainer.vocab), context_len=context_len, num_layers=2, model_dim=128, att_heads=4, ff_hidden_dim=256, name="tiny")
     trainer.setup(model)
     return (trainer, model, context_len)
 
@@ -38,16 +38,17 @@ def small_model() -> (TrainWrapper, TransformerNetwork, int):
     test_files = ["../data/_part7.txt"]
     context_len = 32
     trainer = TrainWrapper(context_len=context_len, train_files=train_files, test_files=test_files)
-    model = TransformerNetwork(output_dict_size=len(trainer.vocab), context_len=context_len, num_layers=6, model_dim=256, att_heads=8, ff_hidden_dim=1024)
+    model = TransformerNetwork(output_dict_size=len(trainer.vocab), context_len=context_len, num_layers=6, model_dim=256, att_heads=8, ff_hidden_dim=1024, name="small")
     trainer.setup(model)
     return (trainer, model, context_len)
 
 def main():
-    trainer, model, context_len = micro_model() # Try uncommenting larger presets
+    # trainer, model, context_len = micro_model() # Try uncommenting larger presets
     # trainer, model, context_len = tiny_model()
-    # trainer, model, context_len = small_model()
-    trainer.train(1) # Try increasing to 100
+    trainer, model, context_len = small_model()
+    trainer.train(10) # Try increasing to 100
     
+    # Sanity checks:
     check_test_accuracy(model, trainer.test_loader)
     string = "From fairest creatures we desire"
     logger.info(f"Completion test: {string}{infer_completion(model, model.device, trainer.vocab, trainer.reverse_vocab, string, context_len, trainer.tokenizer)}")

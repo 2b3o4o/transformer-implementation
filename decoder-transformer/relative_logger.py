@@ -5,7 +5,7 @@ import time
 start_time = time.time()
 
 class RelativeTimeFormatter(logging.Formatter):
-    def formatTime(self, record, datefmt=None):
+    def formatTime(self, record):
         # Calculate the elapsed time since the start of the program
         elapsed_seconds = record.created - start_time
         # Convert to minutes and seconds

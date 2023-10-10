@@ -80,8 +80,8 @@ class Trainer:
         
     def save_checkpoint(self, epoch):
         checkpoint = {
-            'epoch': epoch,
-            'model_state_dict': self.model.state_dict(),
-            'optimizer_state_dict': self.optimizer.state_dict(),
+            "epoch": epoch,
+            "model_state_dict": self.model.state_dict(),
+            "optimizer_state_dict": self.optimizer.state_dict(),
         }
-        torch.save(checkpoint, 'saved_models/checkpoint.pth')
+        torch.save(checkpoint, f"saved_models/{self.model.name}/checkpoint-epoch{epoch}.pth")
