@@ -39,7 +39,6 @@ class PositionalEncoding(nn.Module):
             for i in range(0, self.dims // 2):
                 positional_matrix[pos][2 * i] = sin(torch.tensor(pos / (10000 ** (2 * i / self.dims))))
                 positional_matrix[pos][2 * i + 1] = cos(torch.tensor(pos / (10000 ** (2 * i / self.dims))))
-        positional_matrix = positional_matrix.to(self.device)
         self.register_buffer('positional_matrix', positional_matrix)
         self.positional_matrix = self.positional_matrix.to(self.device)
 
@@ -122,7 +121,7 @@ class TransformerNetwork(nn.Module):
     def forward(self, x):
         x = self.encode_embed(x)
         for layer in self.trans_layers:
-            x = layer.forward(x)
+            x = layer(x)
         x = x.view(x.shape[0], -1)
         x = self.word_predictor(x)
         return x

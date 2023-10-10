@@ -46,6 +46,9 @@ class Trainer:
             self.optimizer.step()
             avg_loss += loss
             batches = step + 1
+            
+            del features
+            del labels
 
         avg_loss = avg_loss / batches
         logger.info(f"Average loss for training batches in this epoch: {avg_loss}")
@@ -62,6 +65,9 @@ class Trainer:
                 avg_loss += loss
                 batches = step + 1
 
+                del features
+                del labels
+
             avg_loss = avg_loss / batches
             logger.info(f"Average loss for validation batches in this epoch: {avg_loss}")
 
@@ -69,3 +75,4 @@ class Trainer:
         for i in range(epochs):
             logger.info(f"Epoch {i}:")
             self.train_one_epoch(do_val)
+            torch.cuda.empty_cache()
