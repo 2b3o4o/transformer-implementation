@@ -1,3 +1,4 @@
+import argparse
 from relative_logger import get_logger
 from train_wrapper import TrainWrapper
 from model import TransformerNetwork
@@ -42,16 +43,27 @@ def small_model() -> (TrainWrapper, TransformerNetwork, int):
     trainer.setup(model)
     return (trainer, model, context_len)
 
-def main():
-    # trainer, model, context_len = micro_model() # Try uncommenting larger presets
-    # trainer, model, context_len = tiny_model()
-    trainer, model, context_len = small_model()
-    trainer.train(10) # Try increasing to 100
-    
+def main(preset: str, epochs: int):
+    if preset == "micro":
+        trainer, model, context_len = micro_model()
+    elif preset == "tiny":
+        trainer, model, context_len = tiny_model()
+    elif preset == "small":
+        trainer, model, context_len = small_model()
+    else:
+        raise ValueError(f"Invalid preset: {preset}")
+
+    trainer.train(epochs)
+
     # Sanity checks:
     check_test_accuracy(model, trainer.test_loader)
     string = "From fairest creatures we desire"
     logger.info(f"Completion test: {string}{infer_completion(model, model.device, trainer.vocab, trainer.reverse_vocab, string, context_len, trainer.tokenizer)}")
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Train a transformer model.")
+    parser.add_argument("preset", type=str, choices=["micro", "tiny", "small"], help="Model size preset (micro, tiny, small).")
+    parser.add_argument("epochs", type=int, help="Number of training epochs.")
+    args = parser.parse_args()
+
+    main(args.preset, args.epochs)
